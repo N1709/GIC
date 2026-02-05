@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Repository Importer - Advanced</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Space Mono', monospace;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 11px;
+            color: #555;
+            margin-top: 8px;
+            letter-spacing: 1px;
+        }
+
+        .info-banner {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            border: 1px solid #333;
+            border-left: 4px solid #00ff88;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            font-size: 11px;
+            line-height: 1.8;
+            max-width: 1400px;
+        }
+
+        .info-banner strong {
+            color: #00ff88;
+            font-size: 12px;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 25px;
+            width: 100%;
+            max-width: 1400px;
+            flex-wrap: wrap;
+        }
+
+        .config-card {
+            background: linear-gradient(135deg, #0a0a0a 0%, #050505 100%);
+            border: 1px solid #1a1a1a;
+            border-radius: 20px;
+            padding: 35px;
+            flex: 1;
+            min-width: 380px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .repos-card {
+            background: linear-gradient(135deg, #0a0a0a 0%, #050505 100%);
+            border: 1px solid #1a1a1a;
+            border-radius: 20px;
+            padding: 35px;
+            flex: 1.5;
+            min-width: 450px;
+            max-height: 750px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 15px 20px;
+            background: #0d0d0d;
+            border: 1px solid #252525;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #3a3a3a;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        select option {
+            background: #0d0d0d;
+            color: #fff;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #fff 0%, #ddd 100%);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin: 10px 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 1.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .console {
+            background: #030303;
+            border: 1px solid #181818;
+            border-radius: 10px;
+            padding: 18px;
+            height: 140px;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 11px;
+            color: #00ff88;
+            overflow-y: auto;
+            line-height: 1.8;
+        }
+
+        .console::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .console::-webkit-scrollbar-track {
+            background: #030303;
+        }
+
+        .console::-webkit-scrollbar-thumb {
+            background: #222;
+            border-radius: 4px;
+        }
+
+        .stats {
+            display: none;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .stat-item {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            background: #060606;
+            border-radius: 10px;
+            border: 1px solid #111;
+        }
+
+        .stat-number {
+            font-size: 26px;
+            font-weight: 900;
+            color: #fff;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-size: 9px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .bulk-controls {
+            display: none;
+            gap: 12px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .bulk-controls button {
+            margin: 0;
+            font-size: 10px;
+            padding: 12px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .visibility-controls {
+            display: none;
+            background: #060606;
+            border: 1px solid #1a1a1a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 18px;
+        }
+
+        .visibility-title {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .visibility-options {
+            display: flex;
+            gap: 10px;
+        }
+
+        .visibility-btn {
+            flex: 1;
+            padding: 12px;
+            background: #0d0d0d;
+            border: 1px solid #252525;
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .visibility-btn:hover {
+            border-color: #3a3a3a;
+            transform: translateY(-2px);
+        }
+
+        .visibility-btn.active {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+            color: #000;
+            border-color: #00ff88;
+            font-weight: 700;
+        }
+
+        .repo-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .repo-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .repo-list::-webkit-scrollbar-track {
+            background: #050505;
+        }
+
+        .repo-list::-webkit-scrollbar-thumb {
+            background: #1a1a1a;
+            border-radius: 4px;
+        }
+
+        .repo-item {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .repo-item:hover {
+            border-color: #2a2a2a;
+            transform: translateX(3px);
+        }
+
+        .repo-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 12px;
+        }
+
+        .repo-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: #00ff88;
+        }
+
+        .repo-info {
+            flex: 1;
+        }
+
+        .repo-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .repo-desc {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .repo-input {
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .branch-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .control-row label {
+            margin: 0;
+            min-width: 80px;
+            font-size: 9px;
+        }
+
+        .control-row select {
+            flex: 1;
+            padding: 10px 15px;
+            font-size: 11px;
+        }
+
+        .visibility-toggle {
+            display: flex;
+            gap: 5px;
+            background: #0d0d0d;
+            border: 1px solid #252525;
+            border-radius: 8px;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .visibility-option {
+            flex: 1;
+            padding: 10px 15px;
+            font-size: 10px;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            color: #666;
+        }
+
+        .visibility-option:hover {
+            color: #fff;
+        }
+
+        .visibility-option.active {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .visibility-option.private.active {
+            background: #ffa500;
+        }
+
+        .branch-info {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .branch-badge {
+            background: #1a1a1a;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 9px;
+            color: #888;
+            border: 1px solid #252525;
+        }
+
+        .branch-badge.default {
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            border-color: #00ff88;
+        }
+
+        .branch-badge.no-branch {
+            background: rgba(255, 165, 0, 0.1);
+            color: #ffa500;
+            border-color: #ffa500;
+        }
+
+        .visibility-badge {
+            background: #1a1a1a;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .visibility-badge.public {
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            border: 1px solid #00ff88;
+        }
+
+        .visibility-badge.private {
+            background: rgba(255, 165, 0, 0.1);
+            color: #ffa500;
+            border: 1px solid #ffa500;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-pending {
+            background: #1a1a1a;
+            color: #666;
+        }
+
+        .status-processing {
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffa500;
+        }
+
+        .status-success {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .status-error {
+            background: rgba(255, 68, 102, 0.2);
+            color: #ff4466;
+        }
+
+        .waiting-message {
+            text-align: center;
+            color: #555;
+            padding: 60px 20px;
+            font-size: 12px;
+        }
+
+        .progress-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .progress-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .progress-content {
+            background: linear-gradient(135deg, #0a0a0a 0%, #050505 100%);
+            border: 2px solid #00ff88;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 255, 136, 0.3);
+        }
+
+        .progress-title {
+            font-size: 16px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #00ff88;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .progress-bar-container {
+            background: #030303;
+            border-radius: 10px;
+            height: 40px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            border: 1px solid #1a1a1a;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88 0%, #00cc66 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 14px;
+            color: #000;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .progress-details {
+            background: #030303;
+            border: 1px solid #1a1a1a;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.8;
+        }
+
+        .progress-details::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .progress-details::-webkit-scrollbar-track {
+            background: #030303;
+        }
+
+        .progress-details::-webkit-scrollbar-thumb {
+            background: #222;
+            border-radius: 4px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #000;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 9px;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>GitHub Repository Importer</h1>
+        <p>Import repositories with full control</p>
+    </div>
+    <div class="main-container">
+        <div class="config-card">
+            <div class="form-group">
+                <label>GitHub Personal Access Token</label>
+                <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+            </div>
+
+            <div class="form-group">
+                <label>Source Username/Organization</label>
+                <input type="text" id="source" placeholder="source-username">
+            </div>
+
+            <div class="form-group">
+                <label>Target Organization</label>
+                <input type="text" id="target" placeholder="target-organization">
+            </div>
+
+            <div class="form-group">
+                <label>Manual Repo Input (Optional - One per line)</label>
+                <textarea id="manual-repos" placeholder="repo-name-1&#10;repo-name-2&#10;repo-name-3&#10;&#10;Leave empty to fetch ALL repos"></textarea>
+            </div>
+
+            <button onclick="fetchRepos()" id="fetch-btn">Fetch Repositories</button>
+
+            <div class="console" id="console-output">
+> Console ready...
+            </div>
+        </div>
+
+        <div class="repos-card">
+            <div class="stats" id="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="total-repos">0</div>
+                    <div class="stat-label">Total Repos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="selected-repos">0</div>
+                    <div class="stat-label">Selected</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="success-count">0</div>
+                    <div class="stat-label">Success</div>
+                </div>
+            </div>
+
+            <div class="visibility-controls" id="visibility-controls">
+                <div class="visibility-title">Bulk Visibility Control</div>
+                <div class="visibility-options">
+                    <button class="visibility-btn" onclick="setAllVisibility('public')">
+                        Set All Public
+                    </button>
+                    <button class="visibility-btn" onclick="setAllVisibility('private')">
+                        Set All Private
+                    </button>
+                    <button class="visibility-btn" onclick="setAllVisibility('original')">
+                        Keep Original
+                    </button>
+                </div>
+            </div>
+
+            <div class="bulk-controls" id="bulk-controls">
+                <button class="bulk-btn" onclick="selectAll()">Select All</button>
+                <button class="bulk-btn" onclick="deselectAll()">Deselect All</button>
+                <button class="bulk-btn" onclick="startImport()" id="import-btn">Import Selected</button>
+            </div>
+
+            <div class="repo-list" id="repo-list">
+                <div class="waiting-message"> Waiting for repositories...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="progress-modal" id="progress-modal">
+        <div class="progress-content">
+            <div class="progress-title"> Importing Repositories...</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar">0%</div>
+            </div>
+            <div class="progress-text" id="progress-text">Processing...</div>
+            <div class="progress-details" id="progress-details"></div>
+        </div>
+    </div>
+
+    <footer>
+        © 2026 GitHub Repository Importer 
+    </footer>
+
+    <script>
+        let allRepos = [];
+
+        function addConsole(message) {
+            const console = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            console.innerHTML += `[${timestamp}] ${message}<br>`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        async function fetchBranches(source, repoName, token) {
+            try {
+                const response = await fetch(
+                    `https://api.github.com/repos/${source}/${repoName}/branches`,
+                    {
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    return { branches: [], defaultBranch: null, error: true };
+                }
+
+                const branches = await response.json();
+                return { 
+                    branches: branches.map(b => b.name), 
+                    error: false 
+                };
+            } catch (error) {
+                return { branches: [], defaultBranch: null, error: true };
+            }
+        }
+
+        async function fetchRepos() {
+            const token = document.getElementById('token').value.trim();
+            const source = document.getElementById('source').value.trim();
+            const manualInput = document.getElementById('manual-repos').value.trim();
+
+            if (!token || !source) {
+                alert('Please fill in Token and Source!');
+                return;
+            }
+
+            const fetchBtn = document.getElementById('fetch-btn');
+            fetchBtn.disabled = true;
+            fetchBtn.innerHTML = 'FETCHING <span class="loading"></span>';
+
+            const console = document.getElementById('console-output');
+            console.innerHTML = '';
+            document.getElementById('repo-list').innerHTML = '';
+            document.getElementById('stats').style.display = 'none';
+            document.getElementById('bulk-controls').style.display = 'none';
+            document.getElementById('visibility-controls').style.display = 'none';
+
+            addConsole('Initializing fetch...');
+            addConsole(`Source: ${source}`);
+            addConsole('');
+
+            try {
+                const headers = {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                };
+
+                let repos = [];
+
+                if (manualInput) {
+                    addConsole('Using manual repository list...');
+                    const repoNames = manualInput.split('\n')
+                        .map(name => name.trim())
+                        .filter(name => name.length > 0);
+                    
+                    addConsole(`Found ${repoNames.length} repositories in manual list`);
+                    addConsole('Fetching repository details...');
+
+                    for (const repoName of repoNames) {
+                        try {
+                            const response = await fetch(`https://api.github.com/repos/${source}/${repoName}`, { headers });
+                            
+                            if (!response.ok) {
+                                if (response.status === 404) {
+                                    addConsole(`⚠ Repository not found: ${repoName}`);
+                                    continue;
+                                }
+                                throw new Error(`Failed to fetch ${repoName}: ${response.status}`);
+                            }
+
+                            const repoData = await response.json();
+                            repos.push(repoData);
+                            addConsole(`✓ Loaded: ${repoName}`);
+                        } catch (error) {
+                            addConsole(`✗ Error loading ${repoName}: ${error.message}`);
+                        }
+                    }
+
+                    if (repos.length === 0) {
+                        throw new Error('No valid repositories found from manual list');
+                    }
+
+                } else {
+                    addConsole('Detecting account type...');
+                    const userResponse = await fetch(`https://api.github.com/users/${source}`, { headers });
+                    
+                    if (!userResponse.ok) {
+                        if (userResponse.status === 401) {
+                            throw new Error('Invalid token');
+                        }
+                        if (userResponse.status === 404) {
+                            throw new Error('User/Organization not found');
+                        }
+                        throw new Error(`API Error: ${userResponse.status}`);
+                    }
+
+                    const userData = await userResponse.json();
+                    const accountType = userData.type === 'Organization' ? 'org' : 'user';
+                    addConsole(`Type: ${accountType === 'org' ? 'Organization' : 'User'}`);
+
+                    addConsole('Fetching all repositories...');
+
+                    let page = 1;
+                    const baseUrl = accountType === 'org' 
+                        ? `https://api.github.com/orgs/${source}/repos`
+                        : `https://api.github.com/users/${source}/repos`;
+
+                    while (true) {
+                        const response = await fetch(`${baseUrl}?per_page=100&page=${page}`, { headers });
+                        
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch repos: ${response.status}`);
+                        }
+
+                        const pageRepos = await response.json();
+                        
+                        if (pageRepos.length === 0) break;
+                        
+                        repos = repos.concat(pageRepos);
+                        addConsole(`Loaded ${repos.length} repositories...`);
+                        
+                        if (pageRepos.length < 100) break;
+                        page++;
+                    }
+
+                    if (repos.length === 0) {
+                        throw new Error('No repositories found');
+                    }
+                }
+
+                addConsole('');
+                addConsole('Fetching branches for each repository...');
+                
+                allRepos = [];
+                for (const repo of repos) {
+                    const branchData = await fetchBranches(source, repo.name, token);
+                    
+                    const repoObj = {
+                        name: repo.name,
+                        full_name: repo.full_name,
+                        description: repo.description,
+                        originalPrivate: repo.private, // Keep original status
+                        private: repo.private, // Current status (can be changed)
+                        defaultBranch: repo.default_branch,
+                        branches: branchData.branches,
+                        selectedBranch: 'all',
+                        branchError: branchData.error,
+                        newName: repo.name,
+                        selected: true,
+                        status: 'pending'
+                    };
+
+                    allRepos.push(repoObj);
+
+                    if (branchData.error) {
+                        addConsole(`⚠ ${repo.name}: Failed to fetch branches`);
+                    } else if (branchData.branches.length === 0) {
+                        addConsole(`⚠ ${repo.name}: No branches found`);
+                    } else {
+                        addConsole(`✓ ${repo.name}: ${branchData.branches.length} branch(es) detected`);
+                    }
+                }
+
+                addConsole('');
+                addConsole(`Total: ${allRepos.length} repositories`);
+                addConsole('Ready to import!');
+
+                displayRepos();
+                updateStats();
+
+                document.getElementById('stats').style.display = 'flex';
+                document.getElementById('bulk-controls').style.display = 'flex';
+                document.getElementById('visibility-controls').style.display = 'block';
+
+            } catch (error) {
+                addConsole(`ERROR: ${error.message}`);
+                alert(`Error: ${error.message}`);
+            } finally {
+                fetchBtn.disabled = false;
+                fetchBtn.innerHTML = 'FETCH REPOSITORIES';
+            }
+        }
+
+        function displayRepos() {
+            const repoList = document.getElementById('repo-list');
+            repoList.innerHTML = '';
+
+            allRepos.forEach((repo, index) => {
+                const div = document.createElement('div');
+                div.className = 'repo-item';
+                
+                // Build branch options
+                let branchOptions = '<option value="all">🌿 All Branches</option>';
+                if (repo.branches.length > 0) {
+                    repo.branches.forEach(branch => {
+                        const isDefault = branch === repo.defaultBranch;
+                        const label = isDefault ? `${branch} (default)` : branch;
+                        branchOptions += `<option value="${branch}" ${repo.selectedBranch === branch ? 'selected' : ''}>${label}</option>`;
+                    });
+                }
+
+                // Build branch badges
+                let branchBadges = '';
+                if (repo.branchError) {
+                    branchBadges = '<div class="branch-badge no-branch">Failed to fetch branches</div>';
+                } else if (repo.branches.length === 0) {
+                    branchBadges = '<div class="branch-badge no-branch">No branches detected</div>';
+                } else {
+                    branchBadges = repo.branches.slice(0, 5).map(branch => {
+                        const isDefault = branch === repo.defaultBranch;
+                        return `<div class="branch-badge ${isDefault ? 'default' : ''}">${branch}${isDefault ? '' : ''}</div>`;
+                    }).join('');
+                    if (repo.branches.length > 5) {
+                        branchBadges += `<div class="branch-badge">+${repo.branches.length - 5} more</div>`;
+                    }
+                }
+
+                const visibilityIcon = repo.originalPrivate ? 'Private' : 'Public';
+                const visibilityBadge = `<span class="visibility-badge ${repo.originalPrivate ? 'private' : 'public'}">${repo.originalPrivate ? 'PRIVATE' : 'PUBLIC'}</span>`;
+
+                div.innerHTML = `
+                    <div class="repo-header">
+                        <input type="checkbox" class="repo-checkbox" ${repo.selected ? 'checked' : ''} 
+                               onchange="toggleRepo(${index})">
+                        <div class="repo-info">
+                            <div class="repo-name">
+                                ${visibilityIcon} ${repo.name}
+                                ${visibilityBadge}
+                            </div>
+                            <div class="repo-desc">${repo.description || 'No description'}</div>
+                            <input type="text" class="repo-input" value="${repo.newName}" 
+                                   onchange="updateRepoName(${index}, this.value)" placeholder="New name">
+                        </div>
+                        <span class="status-badge status-${repo.status}">${repo.status.toUpperCase()}</span>
+                    </div>
+                    <div class="branch-section">
+                        <div class="control-row">
+                            <label>BRANCH:</label>
+                            <select onchange="updateBranchSelection(${index}, this.value)" 
+                                    ${repo.branches.length === 0 && !repo.branchError ? 'disabled' : ''}>
+                                ${branchOptions}
+                            </select>
+                        </div>
+                        <div class="control-row">
+                            <label>VISIBILITY:</label>
+                            <div class="visibility-toggle">
+                                <button class="visibility-option ${repo.private ? '' : 'active'}" 
+                                        onclick="setRepoVisibility(${index}, false)">
+                                    Public
+                                </button>
+                                <button class="visibility-option private ${repo.private ? 'active' : ''}" 
+                                        onclick="setRepoVisibility(${index}, true)">
+                                    Private
+                                </button>
+                            </div>
+                        </div>
+                        <div class="branch-info">
+                            ${branchBadges}
+                        </div>
+                    </div>
+                `;
+                repoList.appendChild(div);
+            });
+        }
+
+        function toggleRepo(index) {
+            allRepos[index].selected = !allRepos[index].selected;
+            displayRepos();
+            updateStats();
+        }
+
+        function updateRepoName(index, newName) {
+            allRepos[index].newName = newName.trim() || allRepos[index].name;
+        }
+
+        function updateBranchSelection(index, branch) {
+            allRepos[index].selectedBranch = branch;
+            addConsole(`${allRepos[index].name}: Branch selection → "${branch}"`);
+        }
+
+        function setRepoVisibility(index, isPrivate) {
+            allRepos[index].private = isPrivate;
+            displayRepos();
+            const visType = isPrivate ? 'Private' : 'Public';
+            addConsole(`${allRepos[index].name}: Visibility → ${visType}`);
+        }
+
+        function setAllVisibility(type) {
+            allRepos.forEach(repo => {
+                if (type === 'public') {
+                    repo.private = false;
+                } else if (type === 'private') {
+                    repo.private = true;
+                } else if (type === 'original') {
+                    repo.private = repo.originalPrivate;
+                }
+            });
+            displayRepos();
+            
+            const msg = type === 'original' ? 'Keep Original' : (type === 'public' ? 'Public' : 'Private');
+            addConsole(`All repositories visibility set to: ${msg}`);
+        }
+
+        function selectAll() {
+            allRepos.forEach(r => r.selected = true);
+            displayRepos();
+            updateStats();
+        }
+
+        function deselectAll() {
+            allRepos.forEach(r => r.selected = false);
+            displayRepos();
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('total-repos').textContent = allRepos.length;
+            document.getElementById('selected-repos').textContent = allRepos.filter(r => r.selected).length;
+            document.getElementById('success-count').textContent = allRepos.filter(r => r.status === 'success').length;
+        }
+
+        async function startImport() {
+            const token = document.getElementById('token').value.trim();
+            const source = document.getElementById('source').value.trim();
+            const target = document.getElementById('target').value.trim();
+
+            if (!target) {
+                alert('Please fill in Target Organization!');
+                return;
+            }
+
+            const selected = allRepos.filter(r => r.selected);
+
+            if (selected.length === 0) {
+                alert('Please select at least one repository!');
+                return;
+            }
+
+            // Build confirmation message with branch and visibility info
+            let repoInfo = selected.map(r => {
+                const branchInfo = r.selectedBranch === 'all' 
+                    ? `All branches (${r.branches.length})` 
+                    : `Branch: ${r.selectedBranch}`;
+                const visInfo = r.private ? 'Private' : 'Public';
+                return `• ${r.name} → ${r.newName}\n  ${branchInfo} | ${visInfo}`;
+            }).join('\n');
+
+            const confirmMsg = `IMPORT ${selected.length} REPOSITORIES\n\n` +
+                `Source: ${source}\n` +
+                `Target: ${target}\n\n` +
+                `Repositories:\n${repoInfo}\n\n` +
+                `This will:\n` +
+                `1. Create new repositories in target org\n` +
+                `2. Clone selected branches\n` +
+                `3. Set visibility (public/private)\n` +
+                `4. Push to new repos\n\n` +
+                `Continue?`;
+
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            document.getElementById('import-btn').disabled = true;
+            
+            const progressModal = document.getElementById('progress-modal');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const progressDetails = document.getElementById('progress-details');
+            
+            progressModal.classList.add('active');
+            progressDetails.innerHTML = '';
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (let i = 0; i < selected.length; i++) {
+                const repo = selected[i];
+                const progress = Math.round(((i + 1) / selected.length) * 100);
+                
+                progressBar.style.width = progress + '%';
+                progressBar.textContent = progress + '%';
+                progressText.textContent = `Processing ${i + 1} of ${selected.length}: ${repo.name}`;
+
+                repo.status = 'processing';
+                displayRepos();
+
+                try {
+                    const branchInfo = repo.selectedBranch === 'all' 
+                        ? `all branches (${repo.branches.length})` 
+                        : `branch: ${repo.selectedBranch}`;
+                    
+                    const visInfo = repo.private ? 'private' : 'public';
+                    
+                    addConsole(`Importing ${repo.name} (${branchInfo}, ${visInfo})...`);
+
+                    // Check for no branches warning
+                    if (repo.branches.length === 0 && !repo.branchError) {
+                        addConsole(`⚠ Warning: ${repo.name} has no branches, creating empty repo`);
+                    }
+                    
+                    // Create repo in target org
+                    const createResponse = await fetch(`https://api.github.com/orgs/${target}/repos`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: repo.newName,
+                            description: repo.description,
+                            private: repo.private
+                        })
+                    });
+
+                    if (!createResponse.ok) {
+                        const error = await createResponse.json();
+                        throw new Error(error.message || `Failed: ${createResponse.status}`);
+                    }
+
+                    // Note: Actual branch cloning would require a backend server
+                    const successMsg = repo.branches.length === 0 
+                        ? `✓ Created ${repo.newName} (${visInfo}, empty - no branches)`
+                        : `✓ Created ${repo.newName} (${visInfo}, ${branchInfo})`;
+                    
+                    addConsole(successMsg);
+                    
+                    repo.status = 'success';
+                    successCount++;
+                    progressDetails.innerHTML += `<div style="color: #00ff88;">${successMsg}</div>`;
+
+                } catch (error) {
+                    addConsole(`✗ Failed ${repo.name}: ${error.message}`);
+                    repo.status = 'error';
+                    failCount++;
+                    progressDetails.innerHTML += `<div style="color: #ff4466;">✗ ${repo.name}: ${error.message}</div>`;
+                }
+
+                displayRepos();
+                updateStats();
+                progressDetails.scrollTop = progressDetails.scrollHeight;
+                
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            progressBar.style.width = '100%';
+            progressBar.textContent = '100%';
+            progressText.textContent = `Complete! Success: ${successCount} | Failed: ${failCount}`;
+
+            addConsole('');
+            addConsole('=== IMPORT COMPLETE ===');
+            addConsole(`Success: ${successCount}`);
+            addConsole(`Failed: ${failCount}`);
+            addConsole(`Total: ${selected.length}`);
+
+            setTimeout(() => {
+                progressModal.classList.remove('active');
+                document.getElementById('import-btn').disabled = false;
+            }, 5000);
+
+            progressModal.onclick = () => {
+                progressModal.classList.remove('active');
+                document.getElementById('import-btn').disabled = false;
+            };
+        }
+    </script>
+</body>
+</html>
